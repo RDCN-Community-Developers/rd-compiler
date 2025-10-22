@@ -34,7 +34,7 @@ def unwind_tags(level: dict):
     :param level: Level as a json object in a dict.
     :return:
     """
-    tags = list(map(lambda x: x.get('tag'), level['events']))
+    tags = set(x.get('tag') for x in level['events'] if 'tag' in x)
 
     new_events = []
     for event in level['events']:
@@ -77,7 +77,7 @@ def shuffle_events(level: dict):
     :param level: Level as a json object in a dict.
     :return:
     """
-    grouped_events = [list(x[1])[::-1] for x in itertools.groupby(level['events'], key=lambda x: (x['bar'], x['beat']))]
+    grouped_events = [list(x[1])[::-1] for x in itertools.groupby(level['events'], key=lambda x: (x['bar'], x.get('beat') or 1))]
     new_events = []
     while len(grouped_events) > 0:
         index = _utils.random.randint(0, len(grouped_events) - 1)

@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = 'A library to compile Rhythm Doctor custom levels.'
 readme = "README.md"
 requires-python = ">=3.8"
-license = {file = "LICENSE"}
+license-file = "LICENSE"
 keywords = []
 authors = [
   { name = "NoMathExpectation", email = "85624722+NoMathExpectation@users.noreply.github.com" },
