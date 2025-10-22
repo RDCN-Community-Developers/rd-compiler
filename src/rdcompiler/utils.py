@@ -38,7 +38,7 @@ def beats_per_bar_list(events: list[dict]) -> list[int]:
     return beats
 
 
-def find_event_position(beats: list[int], offset: float) -> [int, float]:
+def find_event_position(beats: list[int], offset: float) -> tuple[int, float]:
     beat = 1
     for beats_per_bar in beats[1:]:
         if offset < beats_per_bar:

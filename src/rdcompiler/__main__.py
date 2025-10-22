@@ -40,6 +40,9 @@ DEFAULT_PIPELINES = [pipeline(s) for s in [
     'move_tags',
     'shuffle_events',
     'shuffle_conditionals',
+    'add_decorations',
+    'rename_decoration_ids',
+    'shuffle_decorations',
 ]]
 
 

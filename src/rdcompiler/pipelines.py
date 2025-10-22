@@ -77,7 +77,8 @@ def shuffle_events(level: dict):
     :param level: Level as a json object in a dict.
     :return:
     """
-    grouped_events = [list(x[1])[::-1] for x in itertools.groupby(level['events'], key=lambda x: (x['bar'], x.get('beat') or 1))]
+    grouped_events = [list(x[1])[::-1] for x in
+                      itertools.groupby(level['events'], key=lambda x: (x['bar'], x.get('beat') or 1))]
     new_events = []
     while len(grouped_events) > 0:
         index = _utils.random.randint(0, len(grouped_events) - 1)
@@ -232,7 +233,7 @@ def move_tags(level: dict):
     Move all tagged events in the level to random positions.
     Events' order with the same tag will be maintained.
 
-    :param level:
+    :param level: Level as a json object in a dict.
     :return:
     """
     beats_per_bar = _utils.beats_per_bar_list(level['events'])
@@ -257,3 +258,70 @@ def move_tags(level: dict):
 
         event['bar'] = new_bar
         event['beat'] = new_beat
+
+
+DECO_COUNT_MULTIPLIER = 255
+
+
+def add_decorations(level: dict):
+    """
+    Add useless beans decorations to the level for every room.
+
+    :param level: Level as a json object in a dict.
+    :return:
+    """
+
+    count = 0
+    decorations: list = level['decorations']
+    decos_per_room = tuple((k, max(len(list(v)), 1) * DECO_COUNT_MULTIPLIER) for k, v in
+                      itertools.groupby(sorted(decorations, key=lambda x: x['rooms']), key=lambda x: x['rooms']))
+    for rooms, deco_count in decos_per_room:
+        for i in range(deco_count):
+            decorations.append({
+                "rooms": rooms,
+                "row": 0,
+                "visible": False,
+                "id": f"__beans__{count}",
+                "filename": "",
+                "depth": 0,
+                "filter": "NearestNeighbor"
+            })
+            count += 1
+
+
+DECORATION_EVENT_TYPES = [
+    'Move',
+    'Tint',
+    'PlayAnimation',
+    'SetVisible',
+    'ReorderSprite',
+    'Tile',
+    'Blend',
+]
+
+
+def rename_decoration_ids(level: dict):
+    """
+    Rename all decoration ids in the level to random names.
+
+    :param level: Level as a json object in a dict.
+    :return:
+    """
+
+    name_mapping = {}
+    for deco in level['decorations']:
+        deco['id'] = _utils.dict_get_random_name(name_mapping, deco['id'], 16)
+
+    for event in level['events']:
+        if event['type'] in DECORATION_EVENT_TYPES:
+            event['target'] = _utils.dict_get_random_name(name_mapping, event['target'], 16)
+
+
+def shuffle_decorations(level: dict):
+    """
+    Shuffle all decorations in the level.
+
+    :param level: Level as a json object in a dict.
+    :return:
+    """
+    _utils.random.shuffle(level['decorations'])
