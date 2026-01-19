@@ -228,6 +228,13 @@ def deepen_events(level: dict):
     level['events'] = new_events
 
 
+MOVE_TAGS_BLACKLIST_TYPE = [
+    'PlaySong',
+    'SetCrotchetsPerBar',
+    'SetHeartExplodeVolume'
+]
+
+
 def move_tags(level: dict):
     """
     Move all tagged events in the level to random positions.
@@ -239,15 +246,24 @@ def move_tags(level: dict):
     beats_per_bar = _utils.beats_per_bar_list(level['events'])
     total_beats = sum(beats_per_bar[1:])
 
+    tagged_events = {
+        tag: list(events)
+        for tag, events in
+         itertools.groupby(sorted(filter(lambda x: 'tag' in x, level['events']), key=lambda x: x['tag']), lambda x: x['tag'])
+    }
+    tagged_events = {
+        tag: events for tag, events in tagged_events.items() if all(event['type'] not in MOVE_TAGS_BLACKLIST_TYPE for event in events)
+    }
     tag_start_offset = {
         event['tag']: _utils.find_event_offset(beats_per_bar, event['bar'], event['beat']) for event in
-        (min(events, key=lambda x: (x['bar'], x['beat'])) for tag, events in
-         itertools.groupby(filter(lambda x: 'tag' in x, level['events']), lambda x: x['tag']))
+        (min(events, key=lambda x: (x['bar'], x['beat'])) for tag, events in tagged_events.items())
     }
     tag_new_start_offset = {}
 
     for event in level['events']:
         if 'tag' not in event:
+            continue
+        if event['tag'] not in tag_start_offset:
             continue
 
         start = tag_start_offset[event['tag']]
@@ -274,7 +290,7 @@ def add_decorations(level: dict):
     count = 0
     decorations: list = level['decorations']
     decos_per_room = tuple((k, max(len(list(v)), 1) * DECO_COUNT_MULTIPLIER) for k, v in
-                      itertools.groupby(sorted(decorations, key=lambda x: x['rooms']), key=lambda x: x['rooms']))
+                           itertools.groupby(sorted(decorations, key=lambda x: x['rooms']), key=lambda x: x['rooms']))
     for rooms, deco_count in decos_per_room:
         for i in range(deco_count):
             decorations.append({
